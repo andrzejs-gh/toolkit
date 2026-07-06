@@ -6,6 +6,7 @@
 
 size_t chr_count(char* str, char chr);
 size_t chr_replace(char* str, char chr, char replac);
+size_t str_count(char* str, char* substr);
 size_t str_replace(char* dest, char* src, char* substr, char* replac);
 char* str_reverse(char* str);
 
@@ -33,6 +34,23 @@ size_t chr_replace(char* str, char chr, char replac)
 		*str = replac;
 		count++;
 		str++;
+	}
+
+	return count;
+}
+
+size_t str_count(char* str, char* substr)
+{
+	size_t substr_len = strlen(substr);
+	if (!substr_len)
+		return 0;
+
+	size_t count = 0;
+
+	while ( (str = strstr(str, substr)) )
+	{
+		count++;
+		str += substr_len;
 	}
 
 	return count;
@@ -67,8 +85,21 @@ size_t str_replace(char* dest, char* src, char* substr, char* replac)
 
 char* str_reverse(char* str)
 {
+	if (!str)
+		return NULL;
 
-	return str;
+	char* str_addr = str;
+	char* str_end = str + strlen(str) - 1;
+	char temp;
+
+	while ( str < str_end )
+	{
+		temp = *str_end;
+		*str_end-- = *str;
+		*str++ = temp;
+	}
+
+	return str_addr;
 }
 
 #endif
