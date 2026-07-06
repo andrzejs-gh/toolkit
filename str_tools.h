@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stddef.h>
 
+size_t chr_count(char* str, char chr);
 size_t chr_replace(char* str, char chr, char replac);
 size_t str_replace(char* dest, char* src, char* substr, char* replac);
 char* str_reverse(char* str);
