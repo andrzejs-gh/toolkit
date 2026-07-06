@@ -85,7 +85,7 @@ size_t str_replace(char* dest, char* src, char* substr, char* replac)
 
 char* str_reverse(char* str)
 {
-	if (!str)
+	if (!str[0])
 		return NULL;
 
 	char* str_addr = str;
