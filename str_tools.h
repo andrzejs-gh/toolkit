@@ -4,15 +4,15 @@
 #include <string.h>
 #include <stddef.h>
 
-size_t chr_count(char* str, char chr);
+size_t chr_count(const char* str, char chr);
 size_t chr_replace(char* str, char chr, char replac);
-size_t str_count(char* str, char* substr);
-size_t str_replace(char* dest, char* src, char* substr, char* replac);
+size_t str_count(const char* str, const char* substr);
+size_t str_replace(char* dest, const char* src, const char* substr, const char* replac);
 char* str_reverse(char* str);
 
 #ifdef STR_TOOLS_IMPL
 
-size_t chr_count(char* str, char chr)
+size_t chr_count(const char* str, char chr)
 {
 	if (!str || !chr)
 		return 0;
@@ -45,7 +45,7 @@ size_t chr_replace(char* str, char chr, char replac)
 	return count;
 }
 
-size_t str_count(char* str, char* substr)
+size_t str_count(const char* str, const char* substr)
 {
 	if (!str || !substr || !str[0] || !substr[0])
 		return 0;
@@ -62,7 +62,7 @@ size_t str_count(char* str, char* substr)
 	return count;
 }
 
-size_t str_replace(char* dest, char* src, char* substr, char* replac)
+size_t str_replace(char* dest, const char* src, const char* substr, const char* replac)
 {
 	if (!dest || !src || !substr || !replac || !src[0] || !substr[0])
 		return 0;
@@ -71,7 +71,7 @@ size_t str_replace(char* dest, char* src, char* substr, char* replac)
 	size_t replac_len = strlen(replac);
 	size_t count = 0;
 
-	char* ptr;
+	const char* ptr;
 	while ( (ptr = strstr(src, substr)) )
 	{
 		memcpy(dest, src, ptr - src);
