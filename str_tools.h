@@ -9,6 +9,7 @@ size_t chr_replace(char* str, char chr, char replac);
 size_t str_count(const char* str, const char* substr);
 size_t str_replace(char* dest, const char* src, const char* substr, const char* replac);
 char* str_reverse(char* str);
+char* str_lstrip(char* dest, const char* src, const char* to_strip);
 
 #ifdef STR_TOOLS_IMPL
 
@@ -106,6 +107,24 @@ char* str_reverse(char* str)
 	}
 
 	return str_addr;
+}
+
+char* str_lstrip(char* dest, const char* src, const char* to_strip)
+{
+	if (!dest || !src || !to_strip)
+		return dest;
+
+	char chr;
+	while ( (chr = *src) )
+	{
+		if ( !strchr(to_strip, chr) )
+			break;
+		src++;
+	}
+
+	strcpy(dest, src);
+
+	return dest;
 }
 
 #endif
