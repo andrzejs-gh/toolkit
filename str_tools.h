@@ -10,6 +10,7 @@ size_t str_count(const char* str, const char* substr);
 size_t str_replace(char* dest, const char* src, const char* substr, const char* replac);
 char* str_reverse(char* str);
 char* str_lstrip(char* dest, const char* src, const char* to_strip);
+char* str_rstrip(char* dest, const char* src, const char* to_strip);
 
 #ifdef STR_TOOLS_IMPL
 
@@ -123,6 +124,35 @@ char* str_lstrip(char* dest, const char* src, const char* to_strip)
 	}
 
 	strcpy(dest, src);
+
+	return dest;
+}
+
+char* str_rstrip(char* dest, const char* src, const char* to_strip)
+{
+	if ( !dest || !src || !to_strip )
+		return dest;
+	if ( !src[0] )
+	{
+		*dest = '\0';
+		return dest;
+	}
+
+	size_t src_len = strlen(src);
+	const char* last_chr = src + src_len - 1;
+
+	char chr;
+	while ( (chr = *(last_chr--)) )
+	{
+		if ( !strchr(to_strip, chr) )
+			break;
+
+		if ( --src_len == 0 )
+			break;
+	}
+
+	memcpy(dest, src, src_len);
+	*(dest + src_len) = '\0';
 
 	return dest;
 }
