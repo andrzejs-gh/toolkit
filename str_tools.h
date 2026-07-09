@@ -113,17 +113,9 @@ char* str_reverse(char* str)
 char* str_lstrip(char* dest, const char* src, const char* to_strip)
 {
 	if (!dest || !src || !to_strip)
-		return dest;
+		return NULL;
 
-	char chr;
-	while ( (chr = *src) )
-	{
-		if ( !strchr(to_strip, chr) )
-			break;
-		src++;
-	}
-
-	strcpy(dest, src);
+	strcpy( dest, (src + strspn(src, to_strip)) );
 
 	return dest;
 }
@@ -131,7 +123,7 @@ char* str_lstrip(char* dest, const char* src, const char* to_strip)
 char* str_rstrip(char* dest, const char* src, const char* to_strip)
 {
 	if ( !dest || !src || !to_strip )
-		return dest;
+		return NULL;
 	if ( !src[0] )
 	{
 		*dest = '\0';
