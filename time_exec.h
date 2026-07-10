@@ -47,7 +47,7 @@ do { \
 
 #define BENCH_PRINT(WARM_UP, N, func_or_code) \
     BENCHMARK_(WARM_UP, N, func_or_code) \
-    printf("t = %.9f \n", T_EXEC_MACRO_avg_time); \
+    printf("t = %.9f s\n", T_EXEC_MACRO_avg_time); \
 } while (0);
 
 #define BENCH_STORE(WARM_UP, N, variable, func_or_code) \
