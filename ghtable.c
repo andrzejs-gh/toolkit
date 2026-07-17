@@ -33,29 +33,29 @@ static inline void free_key_list(key_list* kl)
     free(kl);
 }
 
-ghtable* new_ghtable(size_t initial_capacity, char type)
+ghtable* new_ghtable(size_t est_init_count, char type)
 {
-    if ( !initial_capacity || ( type != ORD && type != UNORD ) )
+    if ( !est_init_count || ( type != ORD && type != UNORD ) )
         return NULL;
 
     ghtable* ght = calloc(1, sizeof *ght);
     if ( !ght )
         return NULL;
 
-    ghtable_entry* table = calloc( 2*initial_capacity, sizeof(ghtable_entry) );
+    ghtable_entry* table = calloc( 2*est_init_count, sizeof(ghtable_entry) );
     if ( !table )
     {
         free_ghtable(ght);
         return NULL;
     }
 
-    ght->capacity = 2*initial_capacity;
+    ght->capacity = 2*est_init_count;
     ght->count = 0;
     ght->table = table;
 
     if ( type == ORD )
     {
-        key_list* list = allocate_key_list(initial_capacity);
+        key_list* list = allocate_key_list(est_init_count);
         if ( !list )
         {
             free_ghtable(ght);
@@ -67,7 +67,6 @@ ghtable* new_ghtable(size_t initial_capacity, char type)
         ght->keys = NULL;
 
     return ght;
-
 }
 
 void free_ghtable(ghtable* ght)
