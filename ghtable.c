@@ -154,23 +154,11 @@ void* ghtable_get_nth(ghtable* ght, size_t index)
     return ghtable_getn(ght, kl_entry.key, kl_entry.key_len);
 }
 
-ghtable* ghtable_grow(ghtable* ght, size_t factor)
+static inline void rebuild_table(ghtable_entry* old_table, size_t old_capacity,
+                                 ghtable_entry* new_table, size_t new_capacity)
 {
-    if ( factor < 2 )
-        return NULL;
-
-    size_t old_capacity = ght->capacity;
-    size_t new_capacity = factor * old_capacity;
-
-    ghtable_entry* new_table = calloc(new_capacity, sizeof(ghtable_entry));
-    if ( !new_table )
-        return NULL;
-
     ghtable_entry entry;
-    ghtable_entry* old_table = ght->table;
-    ght->table = new_table;
-    ght->capacity = new_capacity;
-    size_t index;
+    size_t index = 0;
 
     for ( size_t i = 0; i < old_capacity; i++ )
     {
@@ -186,6 +174,26 @@ ghtable* ghtable_grow(ghtable* ght, size_t factor)
             new_table[index] = entry;
         }
     }
+}
+
+ghtable* ghtable_grow(ghtable* ght, size_t factor)
+{
+    if ( factor < 2 )
+        return NULL;
+
+    size_t old_capacity = ght->capacity;
+    size_t new_capacity = factor * old_capacity;
+
+    ghtable_entry* new_table = calloc(new_capacity, sizeof(ghtable_entry));
+    if ( !new_table )
+        return NULL;
+
+    ghtable_entry* old_table = ght->table;
+
+    rebuild_table(old_table, old_capacity, new_table, new_capacity);
+
+    ght->table = new_table;
+    ght->capacity = new_capacity;
 
     free(old_table);
 
@@ -194,8 +202,23 @@ ghtable* ghtable_grow(ghtable* ght, size_t factor)
 
 ghtable* ghtable_shrink(ghtable* ght)
 {
+    size_t old_capacity = ght->capacity;
+    size_t new_capacity = (size_t)(old_capacity / LOAD_FACTOR);
 
-    return NULL;
+    ghtable_entry* new_table = calloc( new_capacity, sizeof(ghtable_entry) );
+    if ( !new_table )
+        return NULL;
+
+    ghtable_entry* old_table = ght->table;
+
+    rebuild_table(old_table, old_capacity, new_table, new_capacity);
+
+    ght->table = new_table;
+    ght->capacity = new_capacity;
+
+    free(old_table);
+
+    return ght;
 }
 
 static inline key_list_entry* add_key(ghtable* ght, const void* key, size_t key_size)
