@@ -51,6 +51,7 @@ void* ghtable_getn(ghtable* ght, const void* key, size_t key_size);
 void* ghtable_get_nth(ghtable* ght, size_t index);
 ghtable* ghtable_grow(ghtable* ght, size_t factor);
 ghtable* ghtable_shrink(ghtable* ght);
+void ghtable_drop_keylist(ghtable* ght);
 void* ghtable_set(ghtable* ght, const char* key, void* value, size_t size);
 void* ghtable_setn(ghtable* ght, const void* key, size_t key_size, void* value, size_t value_size);
 int ghtable_del(ghtable* ght, const char* key);

@@ -236,7 +236,7 @@ ghtable* ghtable_shrink(ghtable* ght)
     return ght;
 }
 
-void ghtable_drop_order(ghtable* ght)
+void ghtable_drop_keylist(ghtable* ght)
 {
     if ( ght->keys )
     {
