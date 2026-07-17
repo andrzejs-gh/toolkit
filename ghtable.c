@@ -243,6 +243,7 @@ void ghtable_drop_keylist(ghtable* ght)
         free(ght->keys->list);
         free(ght->keys);
     }
+    ght->keys = NULL;
 }
 
 static inline key_list_entry* add_key(ghtable* ght, const void* key, size_t key_size)
