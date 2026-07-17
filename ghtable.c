@@ -236,6 +236,15 @@ ghtable* ghtable_shrink(ghtable* ght)
     return ght;
 }
 
+void ghtable_drop_order(ghtable* ght)
+{
+    if ( ght->keys )
+    {
+        free(ght->keys->list);
+        free(ght->keys);
+    }
+}
+
 static inline key_list_entry* add_key(ghtable* ght, const void* key, size_t key_size)
 {
     if ( ght->count == ght->keys->capacity )
@@ -272,7 +281,7 @@ static inline void remove_entry(ghtable_entry* entry)
     free(entry->key);
     free(entry->value);
 
-    *entry = (ghtable_entry){NULL, NULL, 0, 0};
+    *entry = (ghtable_entry){NULL, NULL, 0, 0, 0};
 }
 
 void* ghtable_set(ghtable* ght, const char* key, void* value, size_t size)
@@ -323,6 +332,7 @@ void* ghtable_set(ghtable* ght, const char* key, void* value, size_t size)
     table[index].value = memcpy(value_ptr, value, size);
     table[index].hash = hash;
     table[index].key_len = key_len;
+    table[index].value_size = size;
 
     if ( ght->keys && !overwrite )
     {
@@ -388,6 +398,7 @@ void* ghtable_setn(ghtable* ght, const void* key, size_t key_size, void* value, 
     table[index].value = memcpy(value_ptr, value, value_size);
     table[index].hash = hash;
     table[index].key_len = key_size;
+    table[index].value_size = value_size;
 
     if ( ght->keys && !overwrite )
     {
@@ -424,7 +435,7 @@ static inline void shift_entries(ghtable* ght, size_t index)
         else
             table[index-1] = table[index];
 
-        table[index] = (ghtable_entry){NULL, NULL, 0, 0};
+        table[index] = (ghtable_entry){NULL, NULL, 0, 0, 0};
 
         if ( ++index == capacity )
             index = 0;

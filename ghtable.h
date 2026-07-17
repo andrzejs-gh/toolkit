@@ -28,8 +28,9 @@ typedef struct
 {
     void* key;
     void* value;
-    size_t hash;
     size_t key_len;
+    size_t value_size;
+    size_t hash;
 
 } ghtable_entry;
 
