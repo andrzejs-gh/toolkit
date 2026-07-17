@@ -221,7 +221,6 @@ ghtable* ghtable_shrink(ghtable* ght)
             return NULL;
         }
 
-        free(ght->keys->list);
         ght->keys->list = list;
         ght->keys->capacity = kl_new_capacity;
     }
