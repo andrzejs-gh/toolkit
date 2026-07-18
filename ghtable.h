@@ -43,7 +43,7 @@ typedef struct
 
 } ghtable;
 
-ghtable* new_ghtable(size_t initial_capacity, char type);
+ghtable* new_ghtable(size_t est_init_count, char type);
 void free_ghtable(ghtable* ght);
 ghtable_entry* ghtable_get_entry(ghtable* ght, const void* key, size_t key_size);
 void* ghtable_get(ghtable* ght, const char* key);

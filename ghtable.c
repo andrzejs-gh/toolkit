@@ -153,6 +153,17 @@ void* ghtable_get_nth(ghtable* ght, size_t index)
     return ghtable_getn(ght, kl_entry.key, kl_entry.key_len);
 }
 
+void* ghtable_cv(ghtable* ght, const char* key, void* buffer)
+{
+    ghtable_entry* entry = ghtable_get_entry(ght, key, strlen(key));
+
+    size_t value_size = entry->value_size;
+    void* value = entry->value;
+
+
+    return NULL;
+}
+
 static inline void rebuild_table(ghtable_entry* old_table, size_t old_capacity,
                                  ghtable_entry* new_table, size_t new_capacity)
 {
