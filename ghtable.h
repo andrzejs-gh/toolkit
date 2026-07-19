@@ -19,13 +19,6 @@ typedef struct
 
 typedef struct
 {
-    key_list_entry* list;
-    size_t capacity;
-
-} key_list;
-
-typedef struct
-{
     void* key;
     void* value;
     size_t key_len;
@@ -39,7 +32,9 @@ typedef struct
     size_t count;
     size_t capacity;
     ghtable_entry* table;
-    key_list* keys;
+    // -----------------
+    size_t key_list_capacity;
+    key_list_entry* keys;
 
 } ghtable;
 

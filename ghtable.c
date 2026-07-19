@@ -5,32 +5,21 @@
 
 #include "ghtable.h"
 
-static key_list* allocate_key_list(size_t capacity)
+static inline key_list_entry* allocate_key_list(size_t capacity)
 {
-    key_list* new_key_list = malloc(sizeof *new_key_list);
-    if ( !new_key_list )
-        return NULL;
-
     key_list_entry* list = malloc(capacity*sizeof(key_list_entry));
     if ( !list )
-    {
-        free(new_key_list);
         return NULL;
-    }
 
-    new_key_list->list = list;
-    new_key_list->capacity = capacity;
-
-    return new_key_list;
+    return list;
 }
 
-static inline void free_key_list(key_list* kl)
+static inline void free_key_list(key_list_entry* list)
 {
-    if ( !kl )
+    if ( !list )
         return;
 
-    free(kl->list);
-    free(kl);
+    free(list);
 }
 
 ghtable* new_ghtable(size_t est_init_count, char type)
@@ -55,16 +44,20 @@ ghtable* new_ghtable(size_t est_init_count, char type)
 
     if ( type == ORD )
     {
-        key_list* list = allocate_key_list(est_init_count);
+        key_list_entry* list = allocate_key_list(est_init_count);
         if ( !list )
         {
             free_ghtable(ght);
             return NULL;
         }
         ght->keys = list;
+        ght->key_list_capacity = est_init_count;
     }
     else
+    {
         ght->keys = NULL;
+        ght->key_list_capacity = 0;
+    }
 
     return ght;
 }
@@ -148,7 +141,7 @@ void* ghtable_get_nth(ghtable* ght, size_t index)
     if ( index > ght->count - 1 )
         return NULL;
 
-    key_list_entry kl_entry = ght->keys->list[index];
+    key_list_entry kl_entry = ght->keys[index];
 
     return ghtable_getn(ght, kl_entry.key, kl_entry.key_len);
 }
@@ -222,17 +215,17 @@ ghtable* ghtable_shrink(ghtable* ght)
     if ( ght->keys )
     {
         size_t kl_new_capacity = ght->count*sizeof(key_list_entry);
-        key_list_entry* list = ght->keys->list;
+        key_list_entry* keys = ght->keys;
 
-        list = realloc( list, kl_new_capacity );
-        if ( !list )
+        keys = realloc( keys, kl_new_capacity );
+        if ( !keys )
         {
             free(new_table);
             return NULL;
         }
 
-        ght->keys->list = list;
-        ght->keys->capacity = kl_new_capacity;
+        ght->keys = keys;
+        ght->key_list_capacity = kl_new_capacity;
     }
 
     ghtable_entry* old_table = ght->table;
@@ -251,34 +244,34 @@ void ghtable_drop_keylist(ghtable* ght)
 {
     if ( ght->keys )
     {
-        free(ght->keys->list);
         free(ght->keys);
 
+        ght->key_list_capacity = 0;
         ght->keys = NULL;
     }
 }
 
 static inline key_list_entry* add_key(ghtable* ght, const void* key, size_t key_size)
 {
-    if ( ght->count == ght->keys->capacity )
+    if ( ght->count == ght->key_list_capacity )
     {
-        key_list_entry* ptr = realloc(ght->keys->list,
-                                      2*ght->count*sizeof(key_list_entry));
-        if ( !ptr )
+        key_list_entry* list = realloc(ght->keys,
+                                       2*ght->count*sizeof(key_list_entry));
+        if ( !list )
             return NULL;
 
-        ght->keys->list = ptr;
-        ght->keys->capacity = 2*ght->count;
+        ght->keys = list;
+        ght->key_list_capacity = 2*ght->count;
     }
 
-    ght->keys->list[ght->count] = (key_list_entry){(void*)key, key_size};
+    ght->keys[ght->count] = (key_list_entry){(void*)key, key_size};
 
-    return ght->keys->list;
+    return ght->keys;
 }
 
 static inline void del_key(ghtable* ght, const void* key, size_t key_size)
 {
-    key_list_entry* list = ght->keys->list;
+    key_list_entry* list = ght->keys;
     size_t ght_count = ght->count;
 
     size_t i = 0;
