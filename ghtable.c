@@ -206,7 +206,7 @@ ghtable* ghtable_grow(ghtable* ght, size_t factor)
 ghtable* ghtable_shrink(ghtable* ght)
 {
     size_t old_capacity = ght->capacity;
-    size_t new_capacity = (size_t)(old_capacity / LOAD_FACTOR);
+    size_t new_capacity = (size_t)(ght->count / LOAD_FACTOR);
 
     ghtable_entry* new_table = calloc( new_capacity, sizeof(ghtable_entry) );
     if ( !new_table )
