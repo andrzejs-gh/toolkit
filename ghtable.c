@@ -5,6 +5,26 @@
 
 #include "ghtable.h"
 
+typedef struct ghtable
+{
+    size_t count;
+    size_t capacity;
+    ghtable_entry* table;
+    size_t key_list_capacity;
+    key_list_entry* keys;
+
+} ghtable;
+
+typedef struct ghtable_entry
+{
+    void* key;
+    void* value;
+    size_t key_len;
+    size_t value_size;
+    size_t hash;
+
+} ghtable_entry;
+
 static inline key_list_entry* allocate_key_list(size_t capacity)
 {
     key_list_entry* list = malloc(capacity*sizeof(key_list_entry));
@@ -20,6 +40,41 @@ static inline void free_key_list(key_list_entry* list)
         return;
 
     free(list);
+}
+
+size_t ghtable_capacity(ghtable* ght)
+{
+    return ght->capacity;
+}
+
+size_t ghtable_count(ghtable* ght)
+{
+    return ght->count;
+}
+
+size_t ghtable_size(ghtable* ght)
+{
+    return ght->capacity * sizeof( ghtable_entry );
+}
+
+size_t ghtable_shrink_size(ghtable* ght)
+{
+    return (size_t)( (ght->count/LOAD_FACTOR)*sizeof(ghtable_entry) );
+}
+
+size_t ghtable_key_list_size(ghtable* ght)
+{
+    return ght->key_list_capacity * sizeof(key_list_entry);
+}
+
+size_t ghtable_key_list_shrink_size(ghtable* ght)
+{
+    return ght->count * sizeof(key_list_entry);
+}
+
+const key_list_entry* ghtable_key_list(ghtable* ght)
+{
+    return ght->keys;
 }
 
 ghtable* new_ghtable(size_t est_init_count, char type)
@@ -95,11 +150,10 @@ static inline size_t get_hash(const void* key, size_t n)
     return hash;
 }
 
-ghtable_entry* ghtable_get_entry(ghtable* ght, const void* key, size_t key_size)
+static inline ghtable_entry* get_entry(ghtable* ght, const void* key, size_t key_size)
 {
     size_t ght_capacity = ght->capacity;
-    size_t hash = get_hash(key, key_size);
-    size_t index = hash % ght_capacity;
+    size_t index = get_hash(key, key_size) % ght_capacity;
     ghtable_entry* table = ght->table;
     const void* entry_key;
 
@@ -115,25 +169,65 @@ ghtable_entry* ghtable_get_entry(ghtable* ght, const void* key, size_t key_size)
     return NULL;
 }
 
-void* ghtable_get(ghtable* ght, const char* key)
+const void* ghtable_get(ghtable* ght, const char* key)
 {
     ghtable_entry* entry;
-    if ( (entry = ghtable_get_entry(ght, key, strlen(key))) )
+    if ( (entry = get_entry(ght, key, strlen(key))) )
         return entry->value;
     else
         return NULL;
 }
 
-void* ghtable_getn(ghtable* ght, const void* key, size_t key_size)
+const void* ghtable_getn(ghtable* ght, const void* key, size_t key_size)
 {
     ghtable_entry* entry;
-    if ( (entry = ghtable_get_entry(ght, key, key_size)) )
+    if ( (entry = get_entry(ght, key, key_size)) )
         return entry->value;
     else
         return NULL;
 }
 
-void* ghtable_get_nth(ghtable* ght, size_t index)
+value_view ghtable_view(ghtable* ght, const char* key)
+{
+    ghtable_entry* entry;
+    if ( (entry = get_entry(ght, key, strlen(key))) )
+        return (value_view){entry->value, entry->value_size};
+    else
+        return (value_view){0, 0};
+}
+
+value_view ghtable_viewn(ghtable* ght, const void* key, size_t key_len)
+{
+    ghtable_entry* entry;
+    if ( (entry = get_entry(ght, key, key_len)) )
+        return (value_view){entry->value, entry->value_size};
+    else
+        return (value_view){0, 0};
+}
+
+key_list_entry ghtable_nth_kl_entry(ghtable* ght, size_t index)
+{
+    if ( !ght || !ght->keys || !ght->count )
+        return (key_list_entry){NULL, 0};
+
+    if ( index > ght->count - 1 )
+        return (key_list_entry){NULL, 0};
+
+    return ght->keys[index];
+}
+
+const void* ghtable_nth_key(ghtable* ght, size_t index)
+{
+    if ( !ght || !ght->keys || !ght->count )
+        return NULL;
+
+    if ( index > ght->count - 1 )
+        return NULL;
+
+    return ght->keys[index].key;
+}
+
+const void* ghtable_nth(ghtable* ght, size_t index)
 {
     if ( !ght->keys || !ght->count )
         return NULL;
@@ -148,13 +242,26 @@ void* ghtable_get_nth(ghtable* ght, size_t index)
 
 void* ghtable_cv(ghtable* ght, const char* key, void* buffer)
 {
-    ghtable_entry* entry = ghtable_get_entry(ght, key, strlen(key));
+    ghtable_entry* entry = get_entry(ght, key, strlen(key));
+    if ( !entry )
+        return NULL;
 
     size_t value_size = entry->value_size;
     void* value = entry->value;
 
+    return memcpy(buffer, value, value_size);
+}
 
-    return NULL;
+void* ghtable_cvn(ghtable* ght, const void* key, size_t key_len, void* buffer)
+{
+    ghtable_entry* entry = get_entry(ght, key, key_len);
+    if ( !entry )
+        return NULL;
+
+    size_t value_size = entry->value_size;
+    void* value = entry->value;
+
+    return memcpy(buffer, value, value_size);
 }
 
 static inline void rebuild_table(ghtable_entry* old_table, size_t old_capacity,
@@ -290,7 +397,7 @@ static inline void remove_entry(ghtable_entry* entry)
     *entry = (ghtable_entry){NULL, NULL, 0, 0, 0};
 }
 
-void* ghtable_set(ghtable* ght, const char* key, void* value, size_t size)
+const void* ghtable_set(ghtable* ght, const char* key, void* value, size_t size)
 {
     // size_t ght_capacity = ght->capacity;
     if ( ght->count > LOAD_FACTOR * ght->capacity )
@@ -355,7 +462,7 @@ void* ghtable_set(ghtable* ght, const char* key, void* value, size_t size)
     return value_ptr;
 }
 
-void* ghtable_setn(ghtable* ght, const void* key, size_t key_size, void* value, size_t value_size)
+const void* ghtable_setn(ghtable* ght, const void* key, size_t key_size, void* value, size_t value_size)
 {
     if ( ght->count > LOAD_FACTOR * ght->capacity )
     {
@@ -451,7 +558,7 @@ static inline void shift_entries(ghtable* ght, size_t index)
 int ghtable_del(ghtable* ght, const char* key)
 {
     size_t key_len = strlen(key);
-    ghtable_entry* entry = ghtable_get_entry(ght, key, key_len);
+    ghtable_entry* entry = get_entry(ght, key, key_len);
 
     if ( entry )
     {
@@ -475,7 +582,7 @@ int ghtable_del(ghtable* ght, const char* key)
 
 int ghtable_deln(ghtable* ght, const void* key, size_t key_len)
 {
-    ghtable_entry* entry = ghtable_get_entry(ght, key, key_len);
+    ghtable_entry* entry = get_entry(ght, key, key_len);
     if ( entry )
     {
         ghtable_entry* table = ght->table;
