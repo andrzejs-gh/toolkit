@@ -416,7 +416,7 @@ const void* ghtable_set(ghtable* ght, const char* key, void* value, size_t size)
 
     while ( (entry_key = table[index].key) )
     {
-        if ( !strcmp(entry_key, key) )
+        if ( table[index].key_len == key_len && !strcmp(entry_key, key) )
         {
             overwrite = true;
             break;
@@ -426,25 +426,32 @@ const void* ghtable_set(ghtable* ght, const char* key, void* value, size_t size)
             index = 0;
     }
 
+    void* new_key;
+    void* new_value;
+
     if ( !overwrite )
     {
-        if ( !(table[index].key = strdup(key)) )
+        if ( !(new_key = strdup(key)) )
             return NULL;
     }
 
-    void* value_ptr = malloc(size);
-    if ( !value_ptr )
+    new_value = malloc(size);
+    if ( !new_value )
     {
-        remove_entry(&table[index]);
+        if ( !overwrite ) free(new_key);
         return NULL;
     }
 
     if ( overwrite )
         free(table[index].value);
 
-    table[index].value = memcpy(value_ptr, value, size);
-    table[index].hash = hash;
-    table[index].key_len = key_len;
+    if ( !overwrite )
+    {
+        table[index].key = new_key;
+        table[index].hash = hash;
+        table[index].key_len = key_len;
+    }
+    table[index].value = memcpy(new_value, value, size);
     table[index].value_size = size;
 
     if ( ght->keys && !overwrite )
@@ -459,7 +466,7 @@ const void* ghtable_set(ghtable* ght, const char* key, void* value, size_t size)
     if ( !overwrite )
         ght->count++;
 
-    return value_ptr;
+    return new_value;
 }
 
 const void* ghtable_setn(ghtable* ght, const void* key, size_t key_size, void* value, size_t value_size)
@@ -489,28 +496,35 @@ const void* ghtable_setn(ghtable* ght, const void* key, size_t key_size, void* v
             index = 0;
     }
 
+    void* new_key;
+    void* new_value;
+
     if ( !overwrite )
     {
-        void* key_ptr = malloc(key_size);
-        if ( !key_ptr )
+        new_key = malloc(key_size);
+        if ( !new_key )
             return NULL;
 
-        table[index].key = memcpy(key_ptr, key, key_size);
+        new_key = memcpy(new_key, key, key_size);
     }
 
-    void* value_ptr = malloc(value_size);
-    if ( !value_ptr )
+    new_value = malloc(value_size);
+    if ( !new_value )
     {
-        remove_entry(&table[index]);
+        if ( !overwrite ) free(new_key);
         return NULL;
     }
 
     if ( overwrite )
         free(table[index].value);
 
-    table[index].value = memcpy(value_ptr, value, value_size);
-    table[index].hash = hash;
-    table[index].key_len = key_size;
+    if ( !overwrite )
+    {
+        table[index].key = new_key;
+        table[index].hash = hash;
+        table[index].key_len = key_size;
+    }
+    table[index].value = memcpy(new_value, value, value_size);
     table[index].value_size = value_size;
 
     if ( ght->keys && !overwrite )
@@ -525,7 +539,7 @@ const void* ghtable_setn(ghtable* ght, const void* key, size_t key_size, void* v
     if ( !overwrite )
         ght->count++;
 
-    return value_ptr;
+    return new_value;
 }
 
 static inline void shift_entries(ghtable* ght, size_t index)
