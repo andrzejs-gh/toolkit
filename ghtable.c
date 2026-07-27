@@ -71,7 +71,7 @@ size_t ghtable_opt_size(ghtable* ght)
     if ( !ght )
         return 0;
 
-    return (size_t)( (ght->count/LOAD_FACTOR)*sizeof(ghtable_entry) );
+    return (size_t)(ght->count / LOAD_FACTOR) * sizeof(ghtable_entry);
 }
 
 size_t ghtable_key_list_size(ghtable* ght)
@@ -608,6 +608,7 @@ static inline void shift_entries(ghtable* ght, size_t index)
             {
                 table[expected_index] = table[index];
                 table[index] = (ghtable_entry){NULL, NULL, 0, 0, 0};
+                break;
             }
 
             if ( ++expected_index == capacity )
