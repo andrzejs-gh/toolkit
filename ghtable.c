@@ -71,6 +71,9 @@ size_t ghtable_opt_size(ghtable* ght)
     if ( !ght )
         return 0;
 
+    if ( !ght->count )
+        return 1;
+
     return (size_t)(ght->count / LOAD_FACTOR) * sizeof(ghtable_entry);
 }
 
@@ -354,8 +357,11 @@ ghtable* ghtable_shrink(ghtable* ght)
     if ( !ght )
         return NULL;
 
+    if ( !ght->count )
+        return NULL;
+
     size_t old_capacity = ght->capacity;
-    size_t new_capacity = (size_t)(ght->count / LOAD_FACTOR);
+    size_t new_capacity = ght->count / LOAD_FACTOR;
 
     ghtable_entry* new_table = calloc( new_capacity, sizeof(ghtable_entry) );
     if ( !new_table )
@@ -417,16 +423,19 @@ static inline key_list_entry* add_key(ghtable* ght, const void* key, size_t key_
 
     return ght->keys;
 }
-
+// #include <stdio.h>
 static inline void del_key(ghtable* ght, const void* key, size_t key_size)
 {
     key_list_entry* list = ght->keys;
     size_t ght_count = ght->count;
 
-    size_t i = 0;
-    while ( i < ght_count && memcmp(list[i].key, key, key_size) )
-        i++;
-    // [0, 1, 2, 3, 4, 5]
+    size_t i;
+    for ( i = 0; i < ght_count; i++ )
+    {
+        if ( list[i].key_len == key_size && !memcmp(list[i].key, key, key_size) )
+            break;
+    }
+    //printf("key to del = %s \n", (const char*)list[i].key);// [0, 1, 2, 3, 4, 5]
     memmove(list + i, list + i + 1, (ght_count - 1 - i)*sizeof(key_list_entry) );
     list[ght_count - 1] = (key_list_entry){NULL, 0};
 }
