@@ -5,6 +5,9 @@
 
 #include "ghtable.h"
 
+#define MINIMAL_CAPACITY 2
+#define MINIMAL_SIZE MINIMAL_CAPACITY*sizeof(ghtable_entry)
+
 typedef struct ghtable
 {
     size_t count;
@@ -72,9 +75,13 @@ size_t ghtable_opt_size(ghtable* ght)
         return 0;
 
     if ( !ght->count )
-        return 1;
+        return MINIMAL_SIZE;
 
-    return (size_t)(ght->count / LOAD_FACTOR) * sizeof(ghtable_entry);
+    size_t opt_size = (size_t)(ght->count / LOAD_FACTOR) * sizeof(ghtable_entry);
+    if ( opt_size < MINIMAL_SIZE )
+        opt_size = MINIMAL_SIZE;
+
+    return opt_size;
 }
 
 size_t ghtable_key_list_size(ghtable* ght)
@@ -362,6 +369,8 @@ ghtable* ghtable_shrink(ghtable* ght)
 
     size_t old_capacity = ght->capacity;
     size_t new_capacity = ght->count / LOAD_FACTOR;
+    if ( new_capacity < MINIMAL_CAPACITY )
+        new_capacity = MINIMAL_CAPACITY;
 
     ghtable_entry* new_table = calloc( new_capacity, sizeof(ghtable_entry) );
     if ( !new_table )
@@ -423,7 +432,7 @@ static inline key_list_entry* add_key(ghtable* ght, const void* key, size_t key_
 
     return ght->keys;
 }
-// #include <stdio.h>
+
 static inline void del_key(ghtable* ght, const void* key, size_t key_size)
 {
     key_list_entry* list = ght->keys;
@@ -435,7 +444,7 @@ static inline void del_key(ghtable* ght, const void* key, size_t key_size)
         if ( list[i].key_len == key_size && !memcmp(list[i].key, key, key_size) )
             break;
     }
-    //printf("key to del = %s \n", (const char*)list[i].key);// [0, 1, 2, 3, 4, 5]
+
     memmove(list + i, list + i + 1, (ght_count - 1 - i)*sizeof(key_list_entry) );
     list[ght_count - 1] = (key_list_entry){NULL, 0};
 }
@@ -640,7 +649,6 @@ int ghtable_del(ghtable* ght, const char* key)
     if ( entry )
     {
         ghtable_entry* table = ght->table;
-        size_t capacity = ght->capacity;
         size_t index = entry - table;
 
         if ( ght->keys )
@@ -666,7 +674,6 @@ int ghtable_deln(ghtable* ght, const void* key, size_t key_len)
     if ( entry )
     {
         ghtable_entry* table = ght->table;
-        size_t capacity = ght->capacity;
         size_t index = entry - table;
 
         if ( ght->keys )
