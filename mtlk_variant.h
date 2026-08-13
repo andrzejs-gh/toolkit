@@ -6,6 +6,8 @@
 #include <stdbool.h>
 
 #define V(type, val) (mtlk_variant){type, .type = val}
+#define MKVOID(x) (x.type = VOID)
+#define ISVOID(x) (x.type == VOID)
 
 typedef enum
 {
