@@ -8,6 +8,7 @@
 #define V(type, val) (mtlk_variant){type, .type = val}
 #define MKVOID(x) (x.type = VOID)
 #define ISVOID(x) (x.type == VOID)
+#define IS(x, T) (x.type == T)
 
 typedef enum
 {
