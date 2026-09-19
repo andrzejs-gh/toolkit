@@ -1,6 +1,9 @@
 #include <stddef.h>
 #include <stdlib.h>
 
+#define que_ISVALID(queue_ptr)                              \
+mtlk_queue_is_valid(queue_ptr)
+
 #define que_PUSH(queue_ptr, type, item)                     \
 do                                                          \
 {                                                           \
@@ -46,6 +49,20 @@ mtlk_queue new_mtlk_queue(size_t capacity, size_t count, void* buffer)
                 .cursor = 0,
                 .buffer = buffer
            };
+}
+
+int mtlk_queue_is_valid(mtlk_queue* queue)
+{
+    if ( !queue )
+        return 0;
+    if ( !queue->capacity || queue->count > queue->capacity )
+        return 0;
+    if ( queue->cursor > queue->count - 1 )
+        return 0;
+    if ( !queue->buffer )
+        return 0;
+
+    return 1;
 }
 
 void* mtlk_queue_get(mtlk_queue* queue, size_t index, size_t unit_size)
