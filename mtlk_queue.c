@@ -52,16 +52,12 @@ mtlk_queue new_mtlk_queue(size_t capacity, size_t count, void* buffer)
 
 int mtlk_queue_is_valid(mtlk_queue* queue)
 {
-    if ( !queue )
-        return 0;
-    if ( !queue->capacity || queue->count > queue->capacity )
-        return 0;
-    if ( queue->cursor > queue->count - 1 )
-        return 0;
-    if ( !queue->buffer )
-        return 0;
-
-    return 1;
+    return (
+                queue && queue->buffer &&
+                queue->capacity &&
+                queue->count <= queue->capacity &&
+                queue->cursor <= queue->count
+           );
 }
 
 void* mtlk_queue_get(mtlk_queue* queue, size_t index, size_t unit_size)
