@@ -36,7 +36,7 @@ typedef struct
 
 } mtlk_queue;
 
-#ifdef MTLK_QUE_IMPLEMENTATION
+#ifdef MTLK_QUEUE_IMPLEMENTATION
 
 mtlk_queue new_mtlk_queue(size_t capacity, size_t count, void* buffer)
 {
