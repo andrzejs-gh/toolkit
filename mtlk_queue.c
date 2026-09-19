@@ -1,7 +1,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-#define que_PUSH_VAL(queue_ptr, type, item)                 \
+#define que_PUSH(queue_ptr, type, item)                     \
 do                                                          \
 {                                                           \
     mtlk_queue* queue = (queue_ptr);                        \
@@ -15,6 +15,9 @@ do                                                          \
     queue->cursor = ++cursor % (queue->capacity - 1);       \
                                                             \
 } while (0);
+
+#define que_GET(queue_ptr, type, index)                     \
+              *(type*)mtlk_queue_get(queue_ptr, index)
 
 typedef struct
 {
@@ -45,30 +48,8 @@ mtlk_queue new_mtlk_queue(size_t capacity, size_t count, void* buffer)
            };
 }
 
-void push_by_value()
+void* mtlk_queue_get(mtlk_queue* queue, size_t index, size_t unit_size)
 {
-    do
-    {
-
-    } while (0);
+    index = ((queue->cursor+index) % queue->capacity)*unit_size;
+    return (unsigned char*)queue->buffer + index;
 }
-
-// void push(int_queue* que, int item)
-// {
-//     size_t cursor = que->cursor;
-//     que->buffer[cursor] = item;
-//
-//     if ( cursor < que->capacity - 1 )
-//     {
-//         que->cursor++;
-//     }
-//     else
-//     {
-//         que->cursor = 0;
-//     }
-// }
-//
-// int get(int_queue* que, size_t index)
-// {
-//     return que->buffer[(que->cursor+index) % que->capacity];
-// }
