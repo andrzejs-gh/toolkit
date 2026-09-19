@@ -17,7 +17,7 @@ do                                                          \
 } while (0);
 
 #define que_GET(queue_ptr, type, index)                     \
-              *(type*)mtlk_queue_get(queue_ptr, index)
+*(type*)mtlk_queue_get(queue_ptr, index, sizeof(type))
 
 typedef struct
 {
@@ -36,7 +36,7 @@ const mtlk_queue INVALID_QUEUE = (mtlk_queue){0};
 
 mtlk_queue new_mtlk_queue(size_t capacity, size_t count, void* buffer)
 {
-    if ( !capacity || !count || !buffer )
+    if ( capacity <= 1 || count > capacity || !buffer )
         return INVALID_QUEUE;
 
     return (mtlk_queue)
