@@ -1,6 +1,9 @@
 #include <stddef.h>
 #include <stdlib.h>
 
+#define que_NEW(capacity, count, buffer)                    \
+new_mtlk_queue(capacity, count, buffer)
+
 #define que_ISVALID(queue_ptr)                              \
 mtlk_queue_is_valid(queue_ptr)
 
@@ -32,10 +35,6 @@ typedef struct
 } mtlk_queue;
 
 const mtlk_queue INVALID_QUEUE = (mtlk_queue){0};
-
-// 0,0,0 -> 1,0,0 -> 1,2,0 -> 1,2,3
-// 1,2,3 -> 4,2,3 -> 4,5,3 -> 4,5,6  // curs + idx
-// [1,2,3]-[4,2,3]-[4,5,3]-[4,5,6]
 
 mtlk_queue new_mtlk_queue(size_t capacity, size_t count, void* buffer)
 {
