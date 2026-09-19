@@ -12,7 +12,7 @@ do                                                          \
     if ( queue->count < queue->capacity )                   \
         queue->count++;                                     \
                                                             \
-    queue->cursor = ++cursor % (queue->capacity - 1);       \
+    queue->cursor = ++cursor % queue->capacity;             \
                                                             \
 } while (0);
 
