@@ -1,5 +1,4 @@
 #include <stddef.h>
-#include <stdlib.h>
 
 #define que_NEW(capacity, count, buffer)                    \
 new_mtlk_queue(capacity, count, buffer)
@@ -56,7 +55,7 @@ int mtlk_queue_is_valid(mtlk_queue* queue)
                 queue && queue->buffer &&
                 queue->capacity &&
                 queue->count <= queue->capacity &&
-                queue->cursor <= queue->count
+                queue->cursor >= queue->count
            );
 }
 
