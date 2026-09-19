@@ -1,3 +1,6 @@
+#ifndef MTLK_QUEUE_H
+#define MTLK_QUEUE_H
+
 #include <stddef.h>
 
 #define que_NEW(capacity, count, buffer)                    \
@@ -33,12 +36,12 @@ typedef struct
 
 } mtlk_queue;
 
-const mtlk_queue INVALID_QUEUE = (mtlk_queue){0};
+#ifdef MTLK_QUE_IMPLEMENTATION
 
 mtlk_queue new_mtlk_queue(size_t capacity, size_t count, void* buffer)
 {
     if ( capacity <= 1 || count > capacity || !buffer )
-        return INVALID_QUEUE;
+        return (mtlk_queue){0};
 
     return (mtlk_queue)
            {
@@ -64,3 +67,6 @@ void* mtlk_queue_get(mtlk_queue* queue, size_t index, size_t unit_size)
     index = ((queue->cursor+index) % queue->capacity)*unit_size;
     return (unsigned char*)queue->buffer + index;
 }
+
+#endif
+#endif
